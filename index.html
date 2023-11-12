@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ficha de Servicio</title>
+  <title>Fichas de Agentes</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -40,16 +40,22 @@
     button:hover {
       background-color: #45a049;
     }
+
+    .ficha-container {
+      display: none;
+    }
   </style>
 </head>
 <body>
 
-  <form>
+  <div id="fichas-container"></div>
+
+  <form id="ficha-form">
     <label for="placa">Placa del Agente:</label>
     <input type="text" id="placa" name="placa" required>
 
-    <label for="servicios">Servicios realizados el día de hoy:</label>
-    <textarea id="servicios" name="servicios" rows="5" required></textarea>
+    <label for="estado">Estado:</label>
+    <input type="text" id="estado" name="estado" required>
 
     <label for="unidad">Unidad utilizada:</label>
     <input type="text" id="unidad" name="unidad" required>
@@ -65,28 +71,36 @@
 
   <script>
     function guardarFicha() {
+      var placa = document.getElementById('placa').value;
+      var estado = document.getElementById('estado').value;
+      var unidad = document.getElementById('unidad').value;
+      var informacion = document.getElementById('informacion').value;
+
       var ficha = {
-        placa: document.getElementById('placa').value,
-        servicios: document.getElementById('servicios').value,
-        unidad: document.getElementById('unidad').value,
-        informacion: document.getElementById('informacion').value
+        placa: placa,
+        estado: estado,
+        unidad: unidad,
+        informacion: informacion
       };
 
       var fichasGuardadas = JSON.parse(localStorage.getItem('fichas')) || [];
       fichasGuardadas.push(ficha);
       localStorage.setItem('fichas', JSON.stringify(fichasGuardadas));
+
+      cargarPestañas();
+      limpiarFormulario();
     }
 
     function cargarFicha() {
-      var fichasGuardadas = JSON.parse(localStorage.getItem('fichas')) || [];
       var placa = document.getElementById('placa').value;
+      var fichasGuardadas = JSON.parse(localStorage.getItem('fichas')) || [];
 
       var ficha = fichasGuardadas.find(function (item) {
         return item.placa === placa;
       });
 
       if (ficha) {
-        document.getElementById('servicios').value = ficha.servicios;
+        document.getElementById('estado').value = ficha.estado;
         document.getElementById('unidad').value = ficha.unidad;
         document.getElementById('informacion').value = ficha.informacion;
       } else {
@@ -95,8 +109,8 @@
     }
 
     function borrarFicha() {
-      var fichasGuardadas = JSON.parse(localStorage.getItem('fichas')) || [];
       var placa = document.getElementById('placa').value;
+      var fichasGuardadas = JSON.parse(localStorage.getItem('fichas')) || [];
 
       var indice = fichasGuardadas.findIndex(function (item) {
         return item.placa === placa;
@@ -105,6 +119,7 @@
       if (indice !== -1) {
         fichasGuardadas.splice(indice, 1);
         localStorage.setItem('fichas', JSON.stringify(fichasGuardadas));
+        cargarPestañas();
         limpiarFormulario();
       } else {
         alert('No se encontró la ficha para esta placa.');
@@ -113,15 +128,38 @@
 
     function borrarTodasLasFichas() {
       localStorage.removeItem('fichas');
+      cargarPestañas();
       limpiarFormulario();
+    }
+
+    function cargarPestañas() {
+      var fichasGuardadas = JSON.parse(localStorage.getItem('fichas')) || [];
+      var fichasContainer = document.getElementById('fichas-container');
+
+      fichasContainer.innerHTML = '';
+
+      fichasGuardadas.forEach(function (ficha) {
+        var fichaDiv = document.createElement('div');
+        fichaDiv.className = 'ficha-container';
+        fichaDiv.innerHTML = `
+          <h3>${ficha.placa}</h3>
+          <p>Estado: ${ficha.estado}</p>
+          <p>Unidad: ${ficha.unidad}</p>
+          <p>Información: ${ficha.informacion}</p>
+        `;
+
+        fichasContainer.appendChild(fichaDiv);
+      });
     }
 
     function limpiarFormulario() {
       document.getElementById('placa').value = '';
-      document.getElementById('servicios').value = '';
+      document.getElementById('estado').value = '';
       document.getElementById('unidad').value = '';
       document.getElementById('informacion').value = '';
     }
+
+    cargarPestañas(); // Cargar pestañas al cargar la página
   </script>
 
 </body>
